@@ -124,6 +124,11 @@ func (l *Lox) InterpretFile(filename string) []error {
 		switch c {
 		case BREAK_LINE.Token():
 			l.line++
+		case " ":
+		case "\r":
+		case "\t":
+			// Ignore whitespace.
+			break
 		case LEFT_PAREN.Token():
 			l.AddToken(LEFT_PAREN)
 		case RIGHT_PAREN.Token():
