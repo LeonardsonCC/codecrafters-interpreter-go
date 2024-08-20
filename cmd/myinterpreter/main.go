@@ -36,12 +36,12 @@ func main() {
 	}
 
 	for _, c := range string(fileContents) {
-		switch rune(c) {
+		switch c {
 		case LEFT_PARAM:
 			fmt.Println("LEFT_PARAM ( null")
 		case RIGHT_PARAM:
 			fmt.Println("RIGHT_PARAM ) null")
 		}
 	}
-	fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+	fmt.Println("EOF  null")
 }
