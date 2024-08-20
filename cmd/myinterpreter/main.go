@@ -7,7 +7,7 @@ import (
 
 const (
 	LEFT_PARAM  rune = '('
-	RIGHT_PARAM rune = '('
+	RIGHT_PARAM rune = ')'
 )
 
 func main() {
@@ -36,10 +36,10 @@ func main() {
 	}
 
 	for _, c := range fileContents {
-		if c == byte(LEFT_PARAM) {
+		switch rune(c) {
+		case LEFT_PARAM:
 			fmt.Println("LEFT_PARAM ( null")
-		}
-		if c == byte(RIGHT_PARAM) {
+		case RIGHT_PARAM:
 			fmt.Println("RIGHT_PARAM ) null")
 		}
 	}
