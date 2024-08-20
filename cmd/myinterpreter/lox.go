@@ -5,83 +5,105 @@ import (
 	"os"
 )
 
-type Token string
+type Token struct {
+	tokenType string
+	token     string
+	literal   *string
+}
 
-const (
-	EOF           Token = ""
-	BREAK_LINE    Token = "\n"
-	LEFT_PAREN    Token = "("
-	RIGHT_PAREN   Token = ")"
-	LEFT_BRACE    Token = "{"
-	RIGHT_BRACE   Token = "}"
-	STAR          Token = "*"
-	DOT           Token = "."
-	COMMA         Token = ","
-	PLUS          Token = "+"
-	MINUS         Token = "-"
-	SEMICOLON     Token = ";"
-	EQUAL         Token = "="
-	BANG          Token = "!"
-	GREATER       Token = ">"
-	LESS          Token = "<"
-	SLASH         Token = "/"
-	EQUAL_EQUAL   Token = "=="
-	BANG_EQUAL    Token = "!="
-	LESS_EQUAL    Token = "<="
-	GREATER_EQUAL Token = ">="
+var (
+	EOF Token = Token{
+		tokenType: "EOF",
+		token:     "",
+	}
+	BREAK_LINE Token = Token{
+		tokenType: "BREAK_LINE",
+		token:     "\n",
+	}
+	LEFT_PAREN Token = Token{
+		tokenType: "LEFT_PAREN",
+		token:     "(",
+	}
+	RIGHT_PAREN Token = Token{
+		tokenType: "RIGHT_PAREN",
+		token:     ")",
+	}
+	LEFT_BRACE Token = Token{
+		tokenType: "LEFT_BRACE",
+		token:     "{",
+	}
+	RIGHT_BRACE Token = Token{
+		tokenType: "RIGHT_BRACE",
+		token:     "}",
+	}
+	STAR Token = Token{
+		tokenType: "STAR",
+		token:     "*",
+	}
+	DOT Token = Token{
+		tokenType: "DOT",
+		token:     ".",
+	}
+	COMMA Token = Token{
+		tokenType: "COMMA",
+		token:     ",",
+	}
+	PLUS Token = Token{
+		tokenType: "PLUS",
+		token:     "+",
+	}
+	MINUS Token = Token{
+		tokenType: "MINUS",
+		token:     "-",
+	}
+	SEMICOLON Token = Token{
+		tokenType: "SEMICOLON",
+		token:     ";",
+	}
+	EQUAL Token = Token{
+		tokenType: "EQUAL",
+		token:     "=",
+	}
+	BANG Token = Token{
+		tokenType: "BANG",
+		token:     "!",
+	}
+	GREATER Token = Token{
+		tokenType: "GREATER",
+		token:     ">",
+	}
+	LESS Token = Token{
+		tokenType: "LESS",
+		token:     "<",
+	}
+	SLASH Token = Token{
+		tokenType: "SLASH",
+		token:     "/",
+	}
+	EQUAL_EQUAL Token = Token{
+		tokenType: "EQUAL_EQUAL",
+		token:     "==",
+	}
+	BANG_EQUAL Token = Token{
+		tokenType: "BANG_EQUAL",
+		token:     "!=",
+	}
+	LESS_EQUAL Token = Token{
+		tokenType: "LESS_EQUAL",
+		token:     "<=",
+	}
+	GREATER_EQUAL Token = Token{
+		tokenType: "GREATER_EQUAL",
+		token:     ">=",
+	}
 )
 
 func (t Token) Token() string {
-	return string(t)
+	return t.token
 }
 
 func (t Token) String() string {
-	switch t {
-	case EOF:
-		return "EOF"
-	case BREAK_LINE:
-		return "BREAK_LINE"
-	case LEFT_PAREN:
-		return "LEFT_PAREN"
-	case RIGHT_PAREN:
-		return "RIGHT_PAREN"
-	case LEFT_BRACE:
-		return "LEFT_BRACE"
-	case RIGHT_BRACE:
-		return "RIGHT_BRACE"
-	case STAR:
-		return "STAR"
-	case DOT:
-		return "DOT"
-	case COMMA:
-		return "COMMA"
-	case PLUS:
-		return "PLUS"
-	case MINUS:
-		return "MINUS"
-	case SEMICOLON:
-		return "SEMICOLON"
-	case EQUAL:
-		return "EQUAL"
-	case BANG:
-		return "BANG"
-	case LESS:
-		return "LESS"
-	case GREATER:
-		return "GREATER"
-	case SLASH:
-		return "SLASH"
-	case EQUAL_EQUAL:
-		return "EQUAL_EQUAL"
-	case BANG_EQUAL:
-		return "BANG_EQUAL"
-	case LESS_EQUAL:
-		return "LESS_EQUAL"
-	case GREATER_EQUAL:
-		return "GREATER_EQUAL"
-	default:
-		return ""
-	}
+	return t.tokenType
 }
 
 type ErrUnexpectedToken struct {
@@ -188,6 +210,28 @@ func (l *Lox) InterpretFile(filename string) []error {
 			} else {
 				l.AddToken(GREATER)
 			}
+		case "\"":
+			str := ""
+			for {
+				v := l.Peek()
+				if v == "\n" {
+					l.line++
+					break
+				}
+				if l.IsAtEnd() {
+					break
+				}
+				if v == "\"" {
+					l.AddToken(Token{
+						tokenType: "STRING",
+						// TODO: shhhh
+						token:   "\"" + str + "\"",
+						literal: &str,
+					})
+				}
+
+				str += v
+			}
 		default:
 			if c != "" {
 				err := ErrUnexpectedToken{
@@ -233,6 +277,11 @@ func (l *Lox) Match(expected Token) bool {
 }
 
 func (l *Lox) AddToken(r Token) {
-	fmt.Printf("%s %s null\n", r.String(), string(r.Token()))
+	literal := "NULL"
+	if r.literal != nil {
+		literal = *r.literal
+	}
+
+	fmt.Printf("%s %s %s\n", r.String(), string(r.Token()), literal)
 	l.tokens = append(l.tokens, r)
 }
