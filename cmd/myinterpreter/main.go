@@ -8,6 +8,7 @@ import (
 type Token string
 
 const (
+	EOF           Token = ""
 	BREAK_LINE    Token = "\n"
 	LEFT_PAREN    Token = "("
 	RIGHT_PAREN   Token = ")"
@@ -35,6 +36,8 @@ func (t Token) Token() string {
 
 func (t Token) String() string {
 	switch t {
+	case EOF:
+		return ""
 	case BREAK_LINE:
 		return "BREAK_LINE"
 	case LEFT_PAREN:
@@ -172,6 +175,9 @@ func (l *Lox) InterpretFile(filename string) []error {
 		}
 
 	}
+
+	l.AddToken(EOF)
+
 	return errs
 }
 
