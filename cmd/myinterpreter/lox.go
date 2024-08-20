@@ -5,6 +5,94 @@ import (
 	"os"
 )
 
+type Token string
+
+const (
+	EOF           Token = ""
+	BREAK_LINE    Token = "\n"
+	LEFT_PAREN    Token = "("
+	RIGHT_PAREN   Token = ")"
+	LEFT_BRACE    Token = "{"
+	RIGHT_BRACE   Token = "}"
+	STAR          Token = "*"
+	DOT           Token = "."
+	COMMA         Token = ","
+	PLUS          Token = "+"
+	MINUS         Token = "-"
+	SEMICOLON     Token = ";"
+	EQUAL         Token = "="
+	BANG          Token = "!"
+	GREATER       Token = ">"
+	LESS          Token = "<"
+	SLASH         Token = "/"
+	EQUAL_EQUAL   Token = "=="
+	BANG_EQUAL    Token = "!="
+	LESS_EQUAL    Token = "<="
+	GREATER_EQUAL Token = ">="
+)
+
+func (t Token) Token() string {
+	return string(t)
+}
+
+func (t Token) String() string {
+	switch t {
+	case EOF:
+		return "EOF"
+	case BREAK_LINE:
+		return "BREAK_LINE"
+	case LEFT_PAREN:
+		return "LEFT_PAREN"
+	case RIGHT_PAREN:
+		return "RIGHT_PAREN"
+	case LEFT_BRACE:
+		return "LEFT_BRACE"
+	case RIGHT_BRACE:
+		return "RIGHT_BRACE"
+	case STAR:
+		return "STAR"
+	case DOT:
+		return "DOT"
+	case COMMA:
+		return "COMMA"
+	case PLUS:
+		return "PLUS"
+	case MINUS:
+		return "MINUS"
+	case SEMICOLON:
+		return "SEMICOLON"
+	case EQUAL:
+		return "EQUAL"
+	case BANG:
+		return "BANG"
+	case LESS:
+		return "LESS"
+	case GREATER:
+		return "GREATER"
+	case SLASH:
+		return "SLASH"
+	case EQUAL_EQUAL:
+		return "EQUAL_EQUAL"
+	case BANG_EQUAL:
+		return "BANG_EQUAL"
+	case LESS_EQUAL:
+		return "LESS_EQUAL"
+	case GREATER_EQUAL:
+		return "GREATER_EQUAL"
+	default:
+		return ""
+	}
+}
+
+type ErrUnexpectedToken struct {
+	line  int
+	token string
+}
+
+func (e ErrUnexpectedToken) Error() string {
+	return fmt.Sprintf("[line %d] Error: Unexpected character: %s\n", e.line, string(e.token))
+}
+
 type Lox struct {
 	tokens  []Token
 	line    int
@@ -56,6 +144,17 @@ func (l *Lox) InterpretFile(filename string) []error {
 			l.AddToken(MINUS)
 		case SEMICOLON.Token():
 			l.AddToken(SEMICOLON)
+		case SLASH.Token():
+			if l.Match(SLASH) {
+				for {
+					v := l.Peek()
+					if v == "\n" || l.IsAtEnd() {
+						break
+					}
+				}
+			} else {
+				l.AddToken(SLASH)
+			}
 		case EQUAL.Token():
 			if l.Match(EQUAL) {
 				l.AddToken(EQUAL_EQUAL)
@@ -98,8 +197,20 @@ func (l *Lox) InterpretFile(filename string) []error {
 	return errs
 }
 
+func (l *Lox) Peek() string {
+	if l.IsAtEnd() {
+		return ""
+	}
+	l.current++
+	return string(l.source[l.current])
+}
+
+func (l *Lox) IsAtEnd() bool {
+	return l.current == len(l.source)-1
+}
+
 func (l *Lox) Match(expected Token) bool {
-	if l.current == len(l.source)-1 {
+	if l.IsAtEnd() {
 		return false
 	}
 
