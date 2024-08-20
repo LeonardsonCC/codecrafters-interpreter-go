@@ -37,7 +37,7 @@ func (t Token) Token() string {
 func (t Token) String() string {
 	switch t {
 	case EOF:
-		return ""
+		return "EOF"
 	case BREAK_LINE:
 		return "BREAK_LINE"
 	case LEFT_PAREN:
