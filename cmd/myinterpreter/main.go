@@ -176,7 +176,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 }
 
 func (l *Lox) Match(expected Token) bool {
-	if l.current == len(l.source) {
+	if l.current == len(l.source)-1 {
 		return false
 	}
 
