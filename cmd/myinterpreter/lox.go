@@ -153,7 +153,11 @@ func (l *Lox) InterpretFile(filename string) []error {
 			if l.Match(SLASH) {
 				for {
 					v := l.Peek()
-					if v == "\n" || l.IsAtEnd() {
+					if v == "\n" {
+						l.line++
+						break
+					}
+					if l.IsAtEnd() {
 						break
 					}
 				}
