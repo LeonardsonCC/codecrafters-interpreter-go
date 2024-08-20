@@ -51,6 +51,7 @@ func main() {
 
 	var line int
 	for scanner.Scan() {
+		line++
 		c := rune(scanner.Text()[0])
 
 		switch c {
