@@ -50,9 +50,8 @@ func main() {
 	scanner.Split(bufio.ScanRunes)
 
 	var exitCode int
-	var line int
+	line := 1
 	for scanner.Scan() {
-		line++
 		c := rune(scanner.Text()[0])
 
 		switch c {
