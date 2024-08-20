@@ -2,22 +2,39 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 )
 
+type Token rune
+
 const (
-	LEFT_PAREN  rune = '('
-	RIGHT_PAREN rune = ')'
-	LEFT_BRACE  rune = '{'
-	RIGHT_BRACE rune = '}'
-	STAR        rune = '*'
-	DOT         rune = '.'
-	COMMA       rune = ','
-	PLUS        rune = '+'
-	MINUS       rune = '-'
-	SEMICOLON   rune = ';'
+	LEFT_PAREN  Token = '('
+	RIGHT_PAREN Token = ')'
+	LEFT_BRACE  Token = '{'
+	RIGHT_BRACE Token = '}'
+	STAR        Token = '*'
+	DOT         Token = '.'
+	COMMA       Token = ','
+	PLUS        Token = '+'
+	MINUS       Token = '-'
+	SEMICOLON   Token = ';'
+	EQUAL       Token = '='
 )
+
+var ErrUnexpectedToken = errors.New("unexpected token")
+
+type Lexer struct {
+	startExpression bool
+	tokens          []Token
+	line            int
+	// err        error
+}
+
+func (l *Lexer) AddToken(r Token) {
+	l.tokens = append(l.tokens, r)
+}
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -49,38 +66,56 @@ func main() {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanRunes)
 
+	lexer := new(Lexer)
+	lexer.line = 1
+	lexer.tokens = make([]Token, 10)
+
 	var exitCode int
-	line := 1
 	for scanner.Scan() {
 		c := rune(scanner.Text()[0])
 
 		switch c {
 		case '\n':
-			line++
-		case LEFT_PAREN:
+			lexer.line++
+		case rune(LEFT_PAREN):
 			fmt.Println("LEFT_PAREN ( null")
-		case RIGHT_PAREN:
+			lexer.AddToken(LEFT_PAREN)
+		case rune(RIGHT_PAREN):
 			fmt.Println("RIGHT_PAREN ) null")
-		case LEFT_BRACE:
+			lexer.AddToken(RIGHT_PAREN)
+		case rune(LEFT_BRACE):
 			fmt.Println("LEFT_BRACE { null")
-		case RIGHT_BRACE:
+			lexer.AddToken(LEFT_BRACE)
+		case rune(RIGHT_BRACE):
 			fmt.Println("RIGHT_BRACE } null")
-		case STAR:
+			lexer.AddToken(RIGHT_BRACE)
+		case rune(STAR):
 			fmt.Println("STAR * null")
-		case COMMA:
+			lexer.AddToken(STAR)
+		case rune(COMMA):
 			fmt.Println("COMMA , null")
-		case DOT:
+			lexer.AddToken(COMMA)
+		case rune(DOT):
 			fmt.Println("DOT . null")
-		case PLUS:
+			lexer.AddToken(DOT)
+		case rune(PLUS):
 			fmt.Println("PLUS + null")
-		case MINUS:
+			lexer.AddToken(PLUS)
+		case rune(MINUS):
 			fmt.Println("MINUS - null")
-		case SEMICOLON:
+			lexer.AddToken(MINUS)
+		case rune(SEMICOLON):
 			fmt.Println("SEMICOLON ; null")
+			lexer.AddToken(SEMICOLON)
+		case rune(EQUAL):
+			fmt.Println("EQUAL = null")
+			lexer.AddToken(EQUAL)
 		default:
-			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(c))
+			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", lexer.line, string(c))
 			exitCode = 65
+			continue
 		}
+
 	}
 	fmt.Println("EOF  null")
 	os.Exit(exitCode)
