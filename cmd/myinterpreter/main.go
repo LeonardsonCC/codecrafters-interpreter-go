@@ -49,10 +49,13 @@ func main() {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanRunes)
 
+	var line int
 	for scanner.Scan() {
 		c := rune(scanner.Text()[0])
 
 		switch c {
+		case '\n':
+			line++
 		case LEFT_PAREN:
 			fmt.Println("LEFT_PAREN ( null")
 		case RIGHT_PAREN:
@@ -73,6 +76,8 @@ func main() {
 			fmt.Println("MINUS - null")
 		case SEMICOLON:
 			fmt.Println("SEMICOLON ; null")
+		default:
+			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(c))
 		}
 	}
 	fmt.Println("EOF  null")
