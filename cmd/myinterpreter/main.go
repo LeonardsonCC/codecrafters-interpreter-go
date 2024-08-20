@@ -35,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	for _, c := range fileContents {
+	for _, c := range string(fileContents) {
 		switch rune(c) {
 		case LEFT_PARAM:
 			fmt.Println("LEFT_PARAM ( null")
