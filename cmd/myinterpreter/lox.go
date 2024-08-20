@@ -115,6 +115,14 @@ func (e ErrUnexpectedToken) Error() string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %s\n", e.line, string(e.token))
 }
 
+type ErrUnterminedString struct {
+	line int
+}
+
+func (e ErrUnterminedString) Error() string {
+	return fmt.Sprintf("[line %d] Error: Untermined string.\n", e.line)
+}
+
 type Lox struct {
 	tokens  []Token
 	line    int
@@ -215,10 +223,16 @@ func (l *Lox) InterpretFile(filename string) []error {
 			for {
 				v := l.Peek()
 				if v == "\n" {
+					errs = append(errs, ErrUnterminedString{
+						l.line,
+					})
 					l.line++
 					break
 				}
 				if l.IsAtEnd() {
+					errs = append(errs, ErrUnterminedString{
+						l.line,
+					})
 					break
 				}
 				if v == "\"" {
@@ -228,6 +242,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 						token:   "\"" + str + "\"",
 						literal: &str,
 					})
+					break
 				}
 
 				str += v
