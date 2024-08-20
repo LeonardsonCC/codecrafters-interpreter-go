@@ -38,9 +38,9 @@ func main() {
 	for _, c := range string(fileContents) {
 		switch c {
 		case LEFT_PARAM:
-			fmt.Println("LEFT_PARAM ( null")
+			fmt.Println("LEFT_PAREN ( null")
 		case RIGHT_PARAM:
-			fmt.Println("RIGHT_PARAM ) null")
+			fmt.Println("RIGHT_PAREN ) null")
 		}
 	}
 	fmt.Println("EOF  null")
