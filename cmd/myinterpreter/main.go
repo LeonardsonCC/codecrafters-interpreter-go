@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	LEFT_PARAM  rune = '('
-	RIGHT_PARAM rune = ')'
+	LEFT_PAREN  rune = '('
+	RIGHT_PAREN rune = ')'
+	LEFT_BRACE  rune = '{'
+	RIGHT_BRACE rune = '}'
 )
 
 func main() {
@@ -45,10 +47,14 @@ func main() {
 		c := rune(scanner.Text()[0])
 
 		switch c {
-		case LEFT_PARAM:
+		case LEFT_PAREN:
 			fmt.Println("LEFT_PAREN ( null")
-		case RIGHT_PARAM:
+		case RIGHT_PAREN:
 			fmt.Println("RIGHT_PAREN ) null")
+		case LEFT_BRACE:
+			fmt.Println("LEFT_BRACE { null")
+		case RIGHT_BRACE:
+			fmt.Println("RIGHT_BRACE } null")
 		}
 	}
 	fmt.Println("EOF  null")
