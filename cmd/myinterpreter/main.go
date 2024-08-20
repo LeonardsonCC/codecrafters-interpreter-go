@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -29,13 +30,20 @@ func main() {
 	// Uncomment this block to pass the first stage
 
 	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
+
+	f, err := os.Open(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
+	defer f.Close()
 
-	for _, c := range string(fileContents) {
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanRunes)
+
+	for scanner.Scan() {
+		c := rune(scanner.Text()[0])
+
 		switch c {
 		case LEFT_PARAM:
 			fmt.Println("LEFT_PAREN ( null")
