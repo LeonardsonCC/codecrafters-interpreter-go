@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+const (
+	LEFT_PARAM  rune = '('
+	RIGHT_PARAM rune = '('
+)
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
@@ -30,9 +35,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(fileContents) > 0 {
-		panic("Scanner not implemented")
-	} else {
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+	for _, c := range fileContents {
+		if c == byte(LEFT_PARAM) {
+			fmt.Println("LEFT_PARAM ( null")
+		}
+		if c == byte(RIGHT_PARAM) {
+			fmt.Println("RIGHT_PARAM ) null")
+		}
 	}
+	fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 }
