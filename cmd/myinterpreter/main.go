@@ -11,6 +11,10 @@ const (
 	RIGHT_PAREN rune = ')'
 	LEFT_BRACE  rune = '{'
 	RIGHT_BRACE rune = '}'
+	STAR        rune = '*'
+	DOT         rune = '.'
+	COMMA       rune = ','
+	PLUS        rune = '+'
 )
 
 func main() {
@@ -55,6 +59,14 @@ func main() {
 			fmt.Println("LEFT_BRACE { null")
 		case RIGHT_BRACE:
 			fmt.Println("RIGHT_BRACE } null")
+		case STAR:
+			fmt.Println("STAR * null")
+		case COMMA:
+			fmt.Println("COMMA , null")
+		case DOT:
+			fmt.Println("DOT . null")
+		case PLUS:
+			fmt.Println("PLUS + null")
 		}
 	}
 	fmt.Println("EOF  null")
