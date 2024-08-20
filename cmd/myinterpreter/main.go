@@ -49,6 +49,7 @@ func main() {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanRunes)
 
+	var exitCode int
 	var line int
 	for scanner.Scan() {
 		line++
@@ -79,7 +80,9 @@ func main() {
 			fmt.Println("SEMICOLON ; null")
 		default:
 			fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %s\n", line, string(c))
+			exitCode = 65
 		}
 	}
 	fmt.Println("EOF  null")
+	os.Exit(exitCode)
 }
