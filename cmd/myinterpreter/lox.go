@@ -117,10 +117,11 @@ func (e ErrUnexpectedToken) Error() string {
 
 type ErrUnterminedString struct {
 	line int
+	str  string
 }
 
 func (e ErrUnterminedString) Error() string {
-	return fmt.Sprintf("[line %d] Error: Untermined string.\n", e.line)
+	return fmt.Sprintf("[line %d] Error: Untermined string: %s.\n", e.line, e.str)
 }
 
 type Lox struct {
@@ -218,13 +219,14 @@ func (l *Lox) InterpretFile(filename string) []error {
 			} else {
 				l.AddToken(GREATER)
 			}
-		case "\"":
+		case `"`:
 			str := ""
 			for {
 				v := l.Peek()
 				if v == "\n" {
 					errs = append(errs, ErrUnterminedString{
 						l.line,
+						str,
 					})
 					l.line++
 					break
@@ -232,6 +234,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 				if l.IsAtEnd() {
 					errs = append(errs, ErrUnterminedString{
 						l.line,
+						str,
 					})
 					break
 				}
