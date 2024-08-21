@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 )
@@ -29,12 +28,9 @@ func main() {
 	var exitCode int
 	errs := lox.InterpretFile(filename)
 	if len(errs) > 0 {
+		exitCode = 65
 		for _, err := range errs {
 			fmt.Fprint(os.Stderr, err.Error())
-
-			if errors.Is(err, ErrUnexpectedToken{}) {
-				exitCode = 65
-			}
 		}
 	}
 	os.Exit(exitCode)

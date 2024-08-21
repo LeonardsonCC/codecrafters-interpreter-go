@@ -115,12 +115,12 @@ func (e ErrUnexpectedToken) Error() string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %s\n", e.line, string(e.token))
 }
 
-type ErrUnterminedString struct {
+type ErrUnterminatedString struct {
 	line int
 }
 
-func (e ErrUnterminedString) Error() string {
-	return fmt.Sprintf("[line %d] Error: Untermined string.\n", e.line)
+func (e ErrUnterminatedString) Error() string {
+	return fmt.Sprintf("[line %d] Error: Unterminated string.\n", e.line)
 }
 
 type Lox struct {
@@ -148,7 +148,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 
 	l.source = f
 
-	for l.current = 0; l.current < len(l.source); l.current++ {
+	for l.current = 0; l.current < len(l.source); l.Advance() {
 		c := string(l.source[l.current])
 
 		switch c {
@@ -182,7 +182,12 @@ func (l *Lox) InterpretFile(filename string) []error {
 		case SLASH.Token():
 			if l.Match(SLASH) {
 				for {
-					v := l.Peek()
+					v, ok := l.Peek()
+					if !ok {
+						break
+					}
+					l.Advance()
+
 					if v == "\n" {
 						l.line++
 						break
@@ -223,17 +228,19 @@ func (l *Lox) InterpretFile(filename string) []error {
 			start := l.current
 			end := l.current
 			for {
-				v := l.Peek()
-				if v == "\n" {
-					l.line++
-					continue
-				}
-				if l.IsAtEnd() {
+				v, ok := l.Peek()
+				if !ok || l.IsAtEnd() {
 					untermined = true
-					errs = append(errs, ErrUnterminedString{
+					errs = append(errs, ErrUnterminatedString{
 						l.line,
 					})
 					break
+				}
+
+				l.Advance()
+				if v == "\n" {
+					l.line++
+					continue
 				}
 				if v == `"` {
 					end = l.current + 1
@@ -248,9 +255,8 @@ func (l *Lox) InterpretFile(filename string) []error {
 			literal := string(l.source[start+1 : end-1])
 			l.AddToken(Token{
 				tokenType: "STRING",
-				// TODO: shhhh
-				token:   string(l.source[start:end]),
-				literal: &literal,
+				token:     string(l.source[start:end]),
+				literal:   &literal,
 			})
 		default:
 			if c != "" {
@@ -270,16 +276,19 @@ func (l *Lox) InterpretFile(filename string) []error {
 	return errs
 }
 
-func (l *Lox) Peek() string {
-	if l.IsAtEnd() {
-		return ""
-	}
+func (l *Lox) Advance() {
 	l.current++
-	return string(l.source[l.current])
+}
+
+func (l *Lox) Peek() (string, bool) {
+	if l.IsAtEnd() {
+		return "", false
+	}
+	return string(l.source[l.current+1]), true
 }
 
 func (l *Lox) IsAtEnd() bool {
-	return l.current == len(l.source)-1
+	return l.current >= len(l.source)-1
 }
 
 func (l *Lox) Match(expected Token) bool {
@@ -291,13 +300,13 @@ func (l *Lox) Match(expected Token) bool {
 		return false
 	}
 
-	l.current++
+	l.Advance()
 
 	return true
 }
 
 func (l *Lox) AddToken(r Token) {
-	literal := "NULL"
+	literal := "null"
 	if r.literal != nil {
 		literal = *r.literal
 	}
