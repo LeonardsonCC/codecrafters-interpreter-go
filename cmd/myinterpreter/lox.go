@@ -474,7 +474,7 @@ func (l *Lox) number() {
 }
 
 func (l *Lox) isAlpha(c string) bool {
-	return unicode.IsLetter(rune(c[0])) || c == "_"
+	return unicode.IsLetter(rune(c[0])) || unicode.IsNumber(rune(c[0])) || c == "_"
 }
 
 func (l *Lox) identifier() {
