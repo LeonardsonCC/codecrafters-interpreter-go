@@ -98,6 +98,70 @@ var (
 		tokenType: "GREATER_EQUAL",
 		token:     ">=",
 	}
+	AND Token = Token{
+		tokenType: "AND",
+		token:     "and",
+	}
+	OR Token = Token{
+		tokenType: "OR",
+		token:     "or",
+	}
+	CLASS Token = Token{
+		tokenType: "CLASS",
+		token:     "class",
+	}
+	ELSE Token = Token{
+		tokenType: "ELSE",
+		token:     "else",
+	}
+	FALSE Token = Token{
+		tokenType: "FALSE",
+		token:     "false",
+	}
+	FOR Token = Token{
+		tokenType: "FOR",
+		token:     "for",
+	}
+	FUN Token = Token{
+		tokenType: "FUN",
+		token:     "fun",
+	}
+	IF Token = Token{
+		tokenType: "IF",
+		token:     "if",
+	}
+	NIL Token = Token{
+		tokenType: "NIL",
+		token:     "nil",
+	}
+	PRINT Token = Token{
+		tokenType: "PRINT",
+		token:     "print",
+	}
+	RETURN Token = Token{
+		tokenType: "RETURN",
+		token:     "return",
+	}
+	SUPER Token = Token{
+		tokenType: "SUPER",
+		token:     "super",
+	}
+	THIS Token = Token{
+		tokenType: "THIS",
+		token:     "this",
+	}
+	TRUE Token = Token{
+		tokenType: "TRUE",
+		token:     "true",
+	}
+	VAR Token = Token{
+		tokenType: "VAR",
+		token:     "var",
+	}
+	WHILE Token = Token{
+		tokenType: "WHILE",
+		token:     "while",
+	}
 )
 
 func (t Token) Token() string {
@@ -126,16 +190,37 @@ func (e ErrUnterminatedString) Error() string {
 }
 
 type Lox struct {
-	tokens  []Token
-	line    int
-	current int
-	source  []byte
+	tokens   []Token
+	line     int
+	current  int
+	source   []byte
+	keywords map[string]Token
 }
 
 func NewLox() *Lox {
+	kw := map[string]Token{
+		AND.Token():    AND,
+		OR.Token():     OR,
+		CLASS.Token():  CLASS,
+		ELSE.Token():   ELSE,
+		FALSE.Token():  FALSE,
+		FOR.Token():    FOR,
+		FUN.Token():    FUN,
+		IF.Token():     IF,
+		NIL.Token():    NIL,
+		PRINT.Token():  PRINT,
+		RETURN.Token(): RETURN,
+		SUPER.Token():  SUPER,
+		THIS.Token():   THIS,
+		TRUE.Token():   TRUE,
+		VAR.Token():    VAR,
+		WHILE.Token():  WHILE,
+	}
+
 	return &Lox{
-		tokens: make([]Token, 0, 10),
-		line:   1,
+		tokens:   make([]Token, 0, 10),
+		line:     1,
+		keywords: kw,
 	}
 }
 
@@ -262,63 +347,17 @@ func (l *Lox) InterpretFile(filename string) []error {
 			})
 		default:
 			if unicode.IsDigit(rune(c[0])) {
-				start := l.current
-				end := l.current
-				for {
-					v, ok := l.Peek()
-					if !ok {
-						break
-					}
-
-					if !unicode.IsDigit(rune(v[0])) {
-						break
-					}
-
-					l.Advance()
-				}
-
-				if v2, ok := l.Peek(); ok && v2 == DOT.Token() {
-					if v2, ok := l.PeekNext(); ok {
-						if unicode.IsDigit(rune(v2[0])) {
-							l.Advance()
-						}
-						for {
-							v, ok := l.Peek()
-							if !ok {
-								break
-							}
-
-							if !unicode.IsDigit(rune(v[0])) {
-								break
-							}
-							l.Advance()
-						}
-					}
-				}
-
-				end = l.current + 1
-				text := string(l.source[start:end])
-				literal, err := strconv.ParseFloat(text, 64)
-				if err != nil {
-					// TODO: emit error
-				}
-
-				l.AddToken(Token{
-					tokenType: "NUMBER",
-					token:     text,
-					literal:   literal,
-				})
-				continue
-			}
-
-			if c != "" {
+				l.number()
+			} else if l.isAlpha(c) {
+				l.identifier()
+			} else {
 				err := ErrUnexpectedToken{
 					line:  l.line,
 					token: c,
 				}
 				errs = append(errs, err)
+				continue
 			}
-			continue
 		}
 
 	}
@@ -383,4 +422,91 @@ func (l *Lox) AddToken(r Token) {
 
 	fmt.Printf("%s %s %s\n", r.String(), string(r.Token()), literal)
 	l.tokens = append(l.tokens, r)
+}
+
+func (l *Lox) number() {
+	start := l.current
+	end := l.current
+	for {
+		v, ok := l.Peek()
+		if !ok {
+			break
+		}
+
+		if !unicode.IsDigit(rune(v[0])) {
+			break
+		}
+
+		l.Advance()
+	}
+
+	if v2, ok := l.Peek(); ok && v2 == DOT.Token() {
+		if v2, ok := l.PeekNext(); ok {
+			if unicode.IsDigit(rune(v2[0])) {
+				l.Advance()
+			}
+			for {
+				v, ok := l.Peek()
+				if !ok {
+					break
+				}
+
+				if !unicode.IsDigit(rune(v[0])) {
+					break
+				}
+				l.Advance()
+			}
+		}
+	}
+
+	end = l.current + 1
+	text := string(l.source[start:end])
+	literal, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		// TODO: emit error
+	}
+
+	l.AddToken(Token{
+		tokenType: "NUMBER",
+		token:     text,
+		literal:   literal,
+	})
+}
+
+func (l *Lox) isAlpha(c string) bool {
+	return unicode.IsLetter(rune(c[0])) || c == "_"
+}
+
+func (l *Lox) identifier() {
+	start := l.current
+	end := l.current
+
+	for {
+		v, ok := l.Peek()
+		if !ok {
+			end = l.current + 1
+			break
+		}
+
+		if l.isAlpha(v) {
+			l.Advance()
+			continue
+		}
+
+		end = l.current + 1
+		break
+	}
+
+	term := string(l.source[start:end])
+
+	tokenType := "IDENTIFIER"
+	if v, ok := l.keywords[term]; ok {
+		tokenType = v.String()
+	}
+
+	l.AddToken(Token{
+		tokenType: tokenType,
+		token:     term,
+		// literal:   &literal,
+	})
 }
