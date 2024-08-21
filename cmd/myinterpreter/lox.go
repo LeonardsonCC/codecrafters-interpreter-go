@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"unicode"
 )
 
 type Token struct {
 	tokenType string
 	token     string
-	literal   *string
+	literal   any
 }
 
 var (
@@ -259,6 +261,56 @@ func (l *Lox) InterpretFile(filename string) []error {
 				literal:   &literal,
 			})
 		default:
+			if unicode.IsDigit(rune(c[0])) {
+				start := l.current
+				end := l.current
+				for {
+					v, ok := l.Peek()
+					if !ok {
+						break
+					}
+
+					if !unicode.IsDigit(rune(v[0])) {
+						break
+					}
+
+					l.Advance()
+				}
+
+				if v2, ok := l.Peek(); ok && v2 == DOT.Token() {
+					if v2, ok := l.PeekNext(); ok {
+						if unicode.IsDigit(rune(v2[0])) {
+							l.Advance()
+						}
+						for {
+							v, ok := l.Peek()
+							if !ok {
+								break
+							}
+
+							if !unicode.IsDigit(rune(v[0])) {
+								break
+							}
+							l.Advance()
+						}
+					}
+				}
+
+				end = l.current + 1
+				text := string(l.source[start:end])
+				literal, err := strconv.ParseFloat(text, 64)
+				if err != nil {
+					// TODO: emit error
+				}
+
+				l.AddToken(Token{
+					tokenType: "NUMBER",
+					token:     text,
+					literal:   literal,
+				})
+				continue
+			}
+
 			if c != "" {
 				err := ErrUnexpectedToken{
 					line:  l.line,
@@ -287,6 +339,13 @@ func (l *Lox) Peek() (string, bool) {
 	return string(l.source[l.current+1]), true
 }
 
+func (l *Lox) PeekNext() (string, bool) {
+	if l.current+2 >= len(l.source) {
+		return "", false
+	}
+	return string(l.source[l.current+2]), true
+}
+
 func (l *Lox) IsAtEnd() bool {
 	return l.current >= len(l.source)-1
 }
@@ -308,7 +367,18 @@ func (l *Lox) Match(expected Token) bool {
 func (l *Lox) AddToken(r Token) {
 	literal := "null"
 	if r.literal != nil {
-		literal = *r.literal
+		switch v := r.literal.(type) {
+		case *string:
+			literal = fmt.Sprintf("%v", *v)
+		case float64:
+			if v == float64(int(v)) {
+				literal = fmt.Sprintf("%.1f", v)
+			} else {
+				literal = fmt.Sprintf("%g", v)
+			}
+		default:
+			literal = fmt.Sprintf("%v", v)
+		}
 	}
 
 	fmt.Printf("%s %s %s\n", r.String(), string(r.Token()), literal)
