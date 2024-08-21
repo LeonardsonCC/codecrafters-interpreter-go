@@ -220,7 +220,6 @@ func (l *Lox) InterpretFile(filename string) []error {
 			}
 		case `"`:
 			str := ""
-		loop:
 			for {
 				v := l.Peek()
 				if v == "\n" {
@@ -228,13 +227,13 @@ func (l *Lox) InterpretFile(filename string) []error {
 						l.line,
 					})
 					l.line++
-					break loop
+					break
 				}
 				if l.IsAtEnd() {
 					errs = append(errs, ErrUnterminedString{
 						l.line,
 					})
-					break loop
+					break
 				}
 				if v == `"` {
 					l.AddToken(Token{
@@ -243,7 +242,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 						token:   "\"" + str + "\"",
 						literal: &str,
 					})
-					break loop
+					break
 				}
 
 				str += v
