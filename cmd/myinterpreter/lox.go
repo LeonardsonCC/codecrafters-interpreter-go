@@ -219,34 +219,39 @@ func (l *Lox) InterpretFile(filename string) []error {
 				l.AddToken(GREATER)
 			}
 		case `"`:
-			str := ""
+			var untermined bool
+			start := l.current
+			end := l.current
 			for {
 				v := l.Peek()
 				if v == "\n" {
-					errs = append(errs, ErrUnterminedString{
-						l.line,
-					})
 					l.line++
-					break
+					continue
 				}
 				if l.IsAtEnd() {
+					untermined = true
 					errs = append(errs, ErrUnterminedString{
 						l.line,
 					})
 					break
 				}
 				if v == `"` {
-					l.AddToken(Token{
-						tokenType: "STRING",
-						// TODO: shhhh
-						token:   "\"" + str + "\"",
-						literal: &str,
-					})
+					end = l.current + 1
 					break
 				}
-
-				str += v
 			}
+
+			if untermined {
+				break
+			}
+
+			literal := string(l.source[start+1 : end-1])
+			l.AddToken(Token{
+				tokenType: "STRING",
+				// TODO: shhhh
+				token:   string(l.source[start:end]),
+				literal: &literal,
+			})
 		default:
 			if c != "" {
 				err := ErrUnexpectedToken{
