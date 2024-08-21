@@ -235,7 +235,7 @@ func (l *Lox) InterpretFile(filename string) []error {
 					})
 					break
 				}
-				if v == "\"" {
+				if v == `"` {
 					l.AddToken(Token{
 						tokenType: "STRING",
 						// TODO: shhhh
